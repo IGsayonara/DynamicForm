@@ -25,14 +25,14 @@ export const useFormStore = defineStore('form', () => {
         input.setColorValue('green');
         count++;
       } else {
-        input.setColorValue('currentcolor');
+        input.setColorValue();
       }
     });
 
     if (count === inputs.value.length) {
       searchInput.value.setColorValue('green');
     } else {
-      searchInput.value.setColorValue('currentcolor');
+      searchInput.value.setColorValue();
     }
   }, { deep: true });
 

@@ -2,7 +2,7 @@ import { IDynamicInput } from '@/types/dynamic-input.type';
 import { v4 } from 'uuid';
 import { reactive } from 'vue';
 
-const InitialColor = 'currentcolor';
+const InitialColor = '';
 
 export const useDynamicInput = (initialValue?: Omit<IDynamicInput, 'id'>) => {
   const id = v4();

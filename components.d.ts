@@ -9,5 +9,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     DynamicForm: typeof import('./src/components/DynamicForm.vue')['default']
     DynamicInput: typeof import('./src/components/DynamicInput.vue')['default']
+    VowelsCounter: typeof import('./src/components/VowelsCounter.vue')['default']
   }
 }

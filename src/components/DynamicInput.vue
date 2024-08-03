@@ -1,8 +1,7 @@
 <template>
   <VTextField
     v-model="input.value"
-    :base-color="input.color"
-    :color="input.color"
+    :bg-color="input.color"
   />
 </template>
 
