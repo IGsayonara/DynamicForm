@@ -1,63 +1,40 @@
-import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
-import { v4 } from 'uuid';
+// form.store.ts
 
-const minInputLimit = 1;
-const maxInputLimit = 10;
-const initialLength = 3;
-
-interface DynamicInput {
-  id: string;
-  value: string;
-}
+import { defineStore, storeToRefs } from 'pinia';
+import { useFormListStore } from '@/stores/form-list.store';
+import { useFormSearchStore } from '@/stores/form-search.store';
+import { toRefs, watch } from 'vue';
 
 export const useFormStore = defineStore('form', () => {
-  const inputs = ref<DynamicInput[]>([]);
-  const searchValue = ref('');
+  const formListStore = useFormListStore();
+  const formSearchStore = useFormSearchStore();
 
-  const canRemoveInput = computed<boolean>(() => inputs.value.length > minInputLimit);
-  const canAddInput = computed<boolean>(() => inputs.value.length < maxInputLimit);
+  const { inputs } = storeToRefs(formListStore);
+  const { searchInput } = storeToRefs(formSearchStore);
 
-  const addInput = () => {
-    if (!canAddInput.value) {
-      console.warn('Cannot add an input');
-      return;
-    }
+  // Destructure the refs to access them without `.value`
+  const { value: searchValue } = toRefs(searchInput.value.input);
 
-    inputs.value.push({
-      id: v4(),
-      value: '',
+  watch([searchInput, inputs], () => {
+    let count = 0;
+    inputs.value.forEach(input => {
+      const { value: inputValue } = toRefs(input.input);
+
+      const isSearchMatch = searchValue.value && inputValue.value.includes(searchValue.value);
+      if (isSearchMatch) {
+        input.setColorValue('green');
+        count++;
+      } else {
+        input.setColorValue('currentcolor');
+      }
     });
-  };
 
-  const updateSearchValue = (value: string) => {
-    searchValue.value = value;
-  };
-
-  const updateInputValue = (id: string, value: string) => {
-    const input = inputs.value.find(el => el.id === id);
-    if (!input) {
-      console.warn(`Cannot find input with id ${id}`);
-      return;
+    if (count === inputs.value.length) {
+      searchInput.value.setColorValue('green');
+    } else {
+      searchInput.value.setColorValue('currentcolor');
     }
+  }, { deep: true });
 
-    input.value = value;
-  };
-
-  const removeInput = (id: string) => {
-    if (!canRemoveInput.value) {
-      console.warn('Cannot remove the input');
-      return;
-    }
-
-    const index = inputs.value.findIndex(el => el.id === id);
-    inputs.value.splice(index, 1);
-  };
-
-  // initialization
-  for (let i = 0; i < initialLength; i++) {
-    addInput();
-  }
-
-  return { inputs, searchValue, canRemoveInput, canAddInput, updateInputValue, updateSearchValue, addInput, removeInput };
+  return {};
 });

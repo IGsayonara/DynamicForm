@@ -8,6 +8,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     DynamicForm: typeof import('./src/components/DynamicForm.vue')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    DynamicInput: typeof import('./src/components/DynamicInput.vue')['default']
   }
 }
