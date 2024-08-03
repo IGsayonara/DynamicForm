@@ -2,19 +2,19 @@
   <VForm>
     <VRow>
       <VCol cols="12">
-        <DynamicInput :input="searchInput.input" label="Search" />
+        <DynamicInput :composable="searchInput" label="Search" />
       </VCol>
     </VRow>
-    <VRow v-for="(input, index) in inputs" :key="input.id">
+    <VRow v-for="(composable, index) in composables" :key="composable.input.id">
       <VCol class="d-flex flex-column justify-center" cols="12" md="8">
-        <DynamicInput :input="input" :label="`Input ${index + 1}`" />
+        <DynamicInput :composable="composable" :label="`Input ${index + 1}`" />
       </VCol>
       <VCol class="d-flex flex-column justify-center" cols="6" md="2">
-        <VowelsCounter :value="input.value" />
+        <VowelsCounter :value="composable.input.value" />
         <div style="height: 22px" />
       </VCol>
       <VCol class="d-flex flex-column justify-center" cols="6" md="2">
-        <VBtn base-color="red" :disabled="!canRemoveInput" @click="removeInput(input.id)">Delete row</VBtn>
+        <VBtn base-color="red" :disabled="!canRemoveInput" @click="removeInput(composable.input.id)">Delete row</VBtn>
         <div style="height: 22px" />
       </VCol>
     </VRow>
@@ -29,7 +29,6 @@
 <script setup lang="ts">
   import { useFormListStore } from '@/stores/form-list.store';
   import { storeToRefs } from 'pinia';
-  import { computed } from 'vue';
   import { useFormStore } from '@/stores/form.store';
   import { useFormSearchStore } from '@/stores/form-search.store';
   import DynamicInput from '@/components/DynamicInput.vue';
@@ -38,14 +37,8 @@
   const formListStore = useFormListStore();
 
   const { addInput, removeInput } = useFormListStore();
-  const { inputs: controllers, canRemoveInput, canAddInput } = storeToRefs(formListStore);
+  const { inputs: composables, canRemoveInput, canAddInput } = storeToRefs(formListStore);
   const { searchInput } = useFormSearchStore();
-
-  const inputs = computed(() => {
-    return controllers.value.map(controller => {
-      return controller.input;
-    });
-  });
 
   // initialize form logic
   useFormStore();

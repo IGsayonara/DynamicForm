@@ -13,11 +13,15 @@ export const useDynamicInput = (initialValue?: Omit<IDynamicInput, 'id'>) => {
     color: initialValue?.color || InitialColor,
   });
 
+  const setInputValue = (value?: string) => {
+    input.value = value ?? '';
+  };
+
   const setColorValue = (value?: string) => {
     input.color = value ?? InitialColor;
   };
 
-  return { input, setColorValue };
+  return { input, setColorValue, setInputValue };
 };
 
 export type DynamicInputComposable = ReturnType<typeof useDynamicInput>

@@ -1,14 +1,21 @@
 <template>
   <VTextField
-    v-model="input.value"
-    :bg-color="input.color"
+    :bg-color="composable.input.color"
+    :model-value="composable.input.value"
+    @input="onInput($event)"
   />
 </template>
 
 <script setup lang="ts">
-  import { IDynamicInput } from '@/types/dynamic-input.type';
+  import { DynamicInputComposable } from '@/composables/dynamic-input.composable';
+  import debounce from 'lodash.debounce';
 
-  defineProps<{input: IDynamicInput}>();
+  const props = defineProps<{composable: DynamicInputComposable}>();
+
+  const onInput = debounce((event: InputEvent) => {
+    const value = (event.target as HTMLInputElement).value;
+    props.composable.setInputValue(value);
+  }, 300);
 </script>
 
 <style scoped>
