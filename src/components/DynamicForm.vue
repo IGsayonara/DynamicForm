@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <VForm>
     <VRow>
       <VCol cols="12">
         <DynamicInput :input="searchInput.input" label="Search" />
@@ -23,7 +23,7 @@
         <VBtn base-color="blue" :disabled="!canAddInput" @click="addInput">Add row</VBtn>
       </VCol>
     </VRow>
-  </div>
+  </VForm>
 </template>
 
 <script setup lang="ts">
@@ -36,7 +36,6 @@
   import VowelsCounter from '@/components/VowelsCounter.vue';
 
   const formListStore = useFormListStore();
-  useFormStore();
 
   const { addInput, removeInput } = useFormListStore();
   const { inputs: controllers, canRemoveInput, canAddInput } = storeToRefs(formListStore);
@@ -47,6 +46,9 @@
       return controller.input;
     });
   });
+
+  // initialize form logic
+  useFormStore();
 
 </script>
 

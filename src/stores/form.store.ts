@@ -1,40 +1,42 @@
-// form.store.ts
-
 import { defineStore, storeToRefs } from 'pinia';
 import { useFormListStore } from '@/stores/form-list.store';
 import { useFormSearchStore } from '@/stores/form-search.store';
-import { toRefs, watch } from 'vue';
+import { watchEffect } from 'vue';
+
+import configService from '@/config/config';
 
 export const useFormStore = defineStore('form', () => {
+  const matchedInputColor = configService.getConfig('matchedInputColor');
+
   const formListStore = useFormListStore();
   const formSearchStore = useFormSearchStore();
 
   const { inputs } = storeToRefs(formListStore);
   const { searchInput } = storeToRefs(formSearchStore);
 
-  // Destructure the refs to access them without `.value`
-  const { value: searchValue } = toRefs(searchInput.value.input);
+  watchEffect(() => {
+    const searchValue = searchInput.value.input.value;
 
-  watch([searchInput, inputs], () => {
-    let count = 0;
+    let matchCount = 0;
+
     inputs.value.forEach(input => {
-      const { value: inputValue } = toRefs(input.input);
+      const inputValue = input.input.value;
+      const isSearchMatch = searchValue && inputValue.includes(searchValue);
 
-      const isSearchMatch = searchValue.value && inputValue.value.includes(searchValue.value);
       if (isSearchMatch) {
-        input.setColorValue('green');
-        count++;
+        input.setColorValue(matchedInputColor);
+        matchCount++;
       } else {
         input.setColorValue();
       }
     });
 
-    if (count === inputs.value.length) {
-      searchInput.value.setColorValue('green');
+    if (matchCount === inputs.value.length && matchCount > 0) {
+      searchInput.value.setColorValue(matchedInputColor);
     } else {
       searchInput.value.setColorValue();
     }
-  }, { deep: true });
+  });
 
   return {};
 });

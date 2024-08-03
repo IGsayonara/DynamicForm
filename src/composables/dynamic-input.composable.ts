@@ -5,7 +5,7 @@ import { reactive } from 'vue';
 const InitialColor = '';
 
 export const useDynamicInput = (initialValue?: Omit<IDynamicInput, 'id'>) => {
-  const id = v4();
+  const id = v4(); // make id non-reactive
 
   const input: IDynamicInput = reactive({
     id,

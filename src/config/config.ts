@@ -2,18 +2,22 @@ const configs = {
   minInputLimit: 1,
   maxInputLimit: 10,
   initialLength: 3,
+  matchedInputColor: 'green',
 };
 
-class configService {
+type Configs = typeof configs;
+type ConfigKey = keyof Configs;
+
+class ConfigService {
   private configs = configs;
 
-  public getConfig (key: keyof typeof this.configs) {
+  public getConfig<T extends ConfigKey> (key: T): Configs[T] {
     return this.configs[key];
   }
 
-  public getConfigs () {
+  public getConfigs (): Configs {
     return this.configs;
   }
 }
 
-export default new configService();
+export default new ConfigService();
