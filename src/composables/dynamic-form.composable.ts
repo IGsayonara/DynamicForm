@@ -1,11 +1,11 @@
-import { defineStore, storeToRefs } from 'pinia';
+import { storeToRefs } from 'pinia';
 import { useFormListStore } from '@/stores/form-list.store';
 import { useFormSearchStore } from '@/stores/form-search.store';
 import { onUnmounted, watch } from 'vue';
 
 import configService from '@/config/config';
 
-export const useFormStore = defineStore('form', () => {
+export const useDynamicForm = () => {
   const matchedInputColor = configService.getConfig('matchedInputColor');
 
   const formListStore = useFormListStore();
@@ -105,4 +105,4 @@ export const useFormStore = defineStore('form', () => {
   });
 
   return {};
-});
+};

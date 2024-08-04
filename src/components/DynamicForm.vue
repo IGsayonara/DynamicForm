@@ -29,7 +29,7 @@
 <script setup lang="ts">
   import { useFormListStore } from '@/stores/form-list.store';
   import { storeToRefs } from 'pinia';
-  import { useFormStore } from '@/stores/form.store';
+  import { useDynamicForm } from '@/composables/dynamic-form.composable';
   import { useFormSearchStore } from '@/stores/form-search.store';
   import DynamicInput from '@/components/DynamicInput.vue';
   import VowelsCounter from '@/components/VowelsCounter.vue';
@@ -41,7 +41,7 @@
   const { searchInput } = useFormSearchStore();
 
   // initialize form logic
-  useFormStore();
+  useDynamicForm();
 
 </script>
 
