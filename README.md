@@ -3,7 +3,7 @@
 ## Installation 
 
 ```bash
- npm run install
+ npm install
  ```
 ## Development
 
