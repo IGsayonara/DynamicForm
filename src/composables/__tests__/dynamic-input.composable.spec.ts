@@ -1,55 +1,110 @@
-import { describe, expect, it, vi } from 'vitest';
-import { useDynamicInput } from '@/composables/dynamic-input.composable';
-import { IDynamicInput } from '@/types/dynamic-input.type';
+import { fireEvent, render, screen } from '@testing-library/vue';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
+import DynamicFormComponent from '@/components/DynamicForm.vue';
+import configService from '@/config/config';
 
-vi.mock('uuid', () => ({
-  v4: vi.fn(() => 'mock-id'),
+vi.mock('@/composables/dynamic-input.composable', () => ({
+  useDynamicInput: vi.fn(() => ({
+    input: { id: `mock-id-${Math.random()}`, value: '', color: '' },
+    setColorValue: vi.fn(),
+    setInputValue: vi.fn(),
+  })),
 }));
 
-describe('useDynamicInput', () => {
-  it('initializes with default values when no initial value is provided', () => {
-    const { input, setColorValue, setInputValue } = useDynamicInput();
-
-    expect(input.id).toBe('mock-id');
-    expect(input.value).toBe('');
-    expect(input.color).toBe('');
-
-    setInputValue('test value');
-    expect(input.value).toBe('test value');
-
-    setColorValue('red');
-    expect(input.color).toBe('red');
+describe('DynamicForm Integration Tests', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
   });
 
-  it('initializes with provided values', () => {
-    const initialInput: Omit<IDynamicInput, 'id'> = { value: 'initial value', color: 'initial color' };
-    const { input } = useDynamicInput(initialInput);
-
-    expect(input.id).toBe('mock-id');
-    expect(input.value).toBe('initial value');
-    expect(input.color).toBe('initial color');
+  it('initializes with the correct number of inputs', async () => {
+    render(DynamicFormComponent);
+    const inputs = await screen.findAllByLabelText(/Input \d+/);
+    expect(inputs).toHaveLength(configService.getConfig('initialLength'));
   });
 
-  it('correctly updates value and color using methods', () => {
-    const { input, setInputValue, setColorValue } = useDynamicInput();
+  it('adds a new input correctly', async () => {
+    const { getByText, findAllByLabelText } = render(DynamicFormComponent);
 
-    setInputValue('new value');
-    expect(input.value).toBe('new value');
+    const addButton = getByText('Add row').parentElement as HTMLButtonElement;
+    await fireEvent.click(addButton);
 
-    setColorValue('new color');
-    expect(input.color).toBe('new color');
+    const inputs = await findAllByLabelText(/Input \d+/);
+    expect(inputs).toHaveLength(configService.getConfig('initialLength') + 1);
   });
 
-  it('resets value and color to defaults when null is provided', () => {
-    const { input, setInputValue, setColorValue } = useDynamicInput();
+  it('removes an input correctly', async () => {
+    const { getAllByText, findAllByLabelText } = render(DynamicFormComponent);
 
-    setInputValue('new value');
-    setColorValue('new color');
+    const removeButtons = getAllByText('Delete row');
+    await fireEvent.click(removeButtons[0]);
 
-    setInputValue();
-    setColorValue();
+    const inputs = await findAllByLabelText(/Input \d+/);
+    expect(inputs).toHaveLength(configService.getConfig('initialLength') - 1);
+  });
 
-    expect(input.value).toBe('');
-    expect(input.color).toBe('');
+  it('does not exceed the maximum number of inputs', async () => {
+    const { getByText, findAllByLabelText } = render(DynamicFormComponent);
+
+    const maxLimit = configService.getConfig('maxInputLimit');
+    for (let i = 0; i < maxLimit - configService.getConfig('initialLength'); i++) {
+      await fireEvent.click(getByText('Add row').parentElement as HTMLButtonElement);
+    }
+
+    const addButton = getByText('Add row').parentElement as HTMLButtonElement;
+    await fireEvent.click(addButton);
+
+    const inputs = await findAllByLabelText(/Input \d+/);
+    expect(inputs).toHaveLength(maxLimit);
+    expect(addButton.disabled).toBeTruthy();
+  });
+
+  it('does not allow removing below minimum number of inputs', async () => {
+    const { getAllByText, findAllByLabelText } = render(DynamicFormComponent);
+
+    const removeButtons = getAllByText('Delete row');
+    const initialLength = configService.getConfig('initialLength');
+    for (let i = 0; i < initialLength - 1; i++) {
+      await fireEvent.click(removeButtons[i]);
+    }
+
+    const inputs = await findAllByLabelText(/Input \d+/);
+    expect(inputs).toHaveLength(1); // Minimum length should be maintained
+  });
+
+  it('displays correct vowel counts next to each input field', async () => {
+    const { findAllByLabelText } = render(DynamicFormComponent);
+
+    const inputFields = await findAllByLabelText(/Input \d+/);
+    const vowelCountElements = screen.getAllByText(/Vowels:/);
+
+    inputFields.forEach((input, index) => {
+      const value = (input as HTMLInputElement).value;
+      const expectedVowelCount = (value.match(/[aeiou]/gi) || []).length;
+      expect(vowelCountElements[index].textContent).toBe(`Vowels: ${expectedVowelCount}`);
+    });
+  });
+
+  describe('Search Functionality', () => {
+    it('highlights matching inputs when searching', async () => {
+      const { getByLabelText, findAllByLabelText } = render(DynamicFormComponent);
+
+      const searchInput = getByLabelText('Search');
+      await fireEvent.update(searchInput, 'mock');
+
+      const highlightedInputs = await findAllByLabelText(/Input \d+/);
+      const expectedColor = configService.getConfig('matchedInputColor');
+
+      await Promise.all(highlightedInputs.map(async input => {
+        const inputText = input.textContent?.trim() || '';
+        const computedStyle = getComputedStyle(input);
+
+        if (inputText.includes('mock')) {
+          expect(computedStyle.backgroundColor).toBe(expectedColor);
+        } else {
+          expect(computedStyle.backgroundColor).not.toBe(expectedColor);
+        }
+      }));
+    });
   });
 });

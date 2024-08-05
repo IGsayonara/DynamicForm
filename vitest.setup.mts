@@ -26,6 +26,12 @@ vi.mock('@/config/config', () => {
   };
 });
 
+vi.mock('lodash.debounce', () => {
+  return {
+    default: (fn: Function) => fn,
+  };
+});
+
 const vuetify = createVuetify({
   components,
   directives,

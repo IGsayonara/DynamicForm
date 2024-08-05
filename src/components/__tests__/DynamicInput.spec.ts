@@ -3,12 +3,6 @@ import { mount } from '@vue/test-utils';
 import DynamicInput from '../DynamicInput.vue';
 import { DynamicInputComposable } from '@/composables/dynamic-input.composable';
 
-vi.mock('lodash.debounce', () => {
-  return {
-    default: (fn: Function) => fn,
-  };
-});
-
 const composable: DynamicInputComposable = {
   input: {
     id: 'randomId',
